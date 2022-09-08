@@ -19,6 +19,9 @@ on:
         required: false
         type: string
         default: 'iac/service.config.yml'
+    secrets:
+      token_github:
+        required: true
 
 name: Deployment Pipeline
 jobs:
@@ -37,7 +40,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: qoala-engineering/generate-config-action
-          token: ${{ secrets.GIT_HUB_TOKEN }}
+          token: ${{ secrets.token_github }}
           path: .github/actions/generate-config-action
       
       - name: Generate Config
@@ -62,7 +65,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: qoala-engineering/ecr-publish-action
-          token: ${{ secrets.GIT_HUB_TOKEN }}
+          token: ${{ secrets.token_github }}
           path: .github/actions/ecr-publish-action
 
       - name: Build and Push Image
@@ -74,7 +77,7 @@ jobs:
           role-to-assume: ${{ needs.config.outputs.build_role_arn }}
           ecr_cache_tag: latest-${{ needs.config.outputs.environment }}
           build_args: |
-            GITHUB_TOKEN=${{ secrets.GIT_HUB_TOKEN }}
+            GITHUB_TOKEN=${{ secrets.token_github }}
           custom_tags: |
             latest-${{ needs.config.outputs.environment }}
             sha-${{ github.sha }}
@@ -91,21 +94,21 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: qoala-engineering/setup-eks-helm-action
-          token: ${{ secrets.GIT_HUB_TOKEN }}
+          token: ${{ secrets.token_github }}
           path: .github/actions/setup-eks-helm-action
 
       - uses: ./.github/actions/setup-eks-helm-action
         with:
           aws-region: ${{ needs.config.outputs.aws_region }}
           role-to-assume: ${{ needs.config.outputs.deploy_role_arn }}
-          github-token: ${{ secrets.GIT_HUB_TOKEN }}
+          github-token: ${{ secrets.token_github }}
           cluster-name: ${{ needs.config.outputs.eks_cluster }}
       
       - name: Checkout SSM Injection
         uses: actions/checkout@v2
         with:
           repository: qoala-engineering/helm-values-ssm-injection
-          token: ${{ secrets.GIT_HUB_TOKEN }}
+          token: ${{ secrets.token_github }}
           path: .github/actions/helm-values-ssm-injection
 
       - name: SSM Injection
