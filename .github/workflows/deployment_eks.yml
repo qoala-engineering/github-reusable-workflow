@@ -84,7 +84,7 @@ jobs:
 
   deploy:
     name: Deploy Service
-    needs: build
+    needs: [ config, build ]
     runs-on: [self-hosted, eks-runner]
     steps:
       - name: Checkout
