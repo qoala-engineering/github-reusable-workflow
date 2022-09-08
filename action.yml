@@ -20,7 +20,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: .github/workflows/reusable.yml
+    - uses: qoala-engineering/github-reusable-workflow/.github/workflows/reusable.yml@add/features
       with:
         bu: ${{ inputs.environment }}
         environment: ${{ inputs.environment }}
