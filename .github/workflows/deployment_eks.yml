@@ -56,7 +56,7 @@ jobs:
     runs-on: [ self-hosted, eks-runner ]
     outputs:
       image_registry: ${{ steps.publish_image.outputs.image_registry }}
-      image_meta: sha-${{ github.sha }}
+      image_tag: sha-${{ github.sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
