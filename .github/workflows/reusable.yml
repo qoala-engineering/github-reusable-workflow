@@ -8,6 +8,7 @@ on:
       environment:
         required: true
         type: string
+        default: 'undefined'
       service_name:
         required: true
         type: string
