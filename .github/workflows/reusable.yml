@@ -13,7 +13,7 @@ on:
         type: string
         description: 'service name, also will be used as ecr repo name'
       aws_ssm_region:
-        required: true
+        required: false
         type: string
       config_path:
         required: false
