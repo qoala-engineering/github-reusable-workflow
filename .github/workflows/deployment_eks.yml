@@ -168,9 +168,6 @@ jobs:
           image: ${{ needs.build.outputs.image_registry }}/${{ inputs.service_name }}:${{ needs.build.outputs.image_tag }}
           environment: ${{ needs.config.outputs.environment }}
           configPath: ${{ inputs.config_path }}
-      
-      - name: Debug
-        run: cat ${{ steps.values.outputs.values }}
  
       - name: Deploy service
         shell: bash
