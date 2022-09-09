@@ -12,9 +12,9 @@ on:
         required: true
         type: string
         description: 'service name, also will be used as ecr repo name'
-      aws_ssm_region:
-        required: false
-        type: string
+      # aws_ssm_region:
+      #   required: false
+      #   type: string
       config_path:
         required: false
         type: string
@@ -49,6 +49,56 @@ jobs:
         with:
           bu: ${{ inputs.bu }}
           environment: ${{ inputs.environment }}
+
+  db_migration:
+    name: DB Migration
+    needs: config
+    runs-on: [ self-hosted, eks-runner ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ needs.config.outputs.ssm_role_arn }}
+          role-duration-seconds: 3600
+          aws-region: ${{ needs.config.outputs.aws_ssm_region }}
+      
+      - name: Checkout Goose Migration Action Repo
+        if: inputs.lang == 'golang'
+        uses: actions/checkout@v2
+        with:
+          repository: qoala-engineering/goose-migration-action
+          token: ${{ secrets.token_github }}
+          path: .github/actions/goose-migration-action
+
+      - uses: ./.github/actions/goose-migration-action
+        if: inputs.lang == 'golang'
+        with:
+          parameter_path: ${{ needs.config.outputs.ssm_path }} # /bu/environment/app/service_name/PARAM_NAME 
+          db_name: DB_NAME
+          db_host_key: DB_HOST
+          db_user_key: DB_USERNAME
+          db_password_key: DB_PASSWORD
+          db_migration_path: database/migrations
+      
+      - name: Checkout Knex Migration Action Repo
+        if: inputs.lang == 'nodejs'
+        uses: actions/checkout@v2
+        with:
+          repository: qoala-engineering/knex-migration-action
+          token: ${{ secrets.token_github }}
+          path: .github/actions/knex-migration-action
+
+      - uses: ./.github/actions/knex-migration-action
+        if: inputs.lang == 'nodejs'
+        with:
+          db_name: DB_NAME
+          db_host_key: ${{ needs.config.outputs.ssm_path }}/DB_HOST
+          db_user_key: ${{ needs.config.outputs.ssm_path }}/DB_USERNAME
+          db_password_key: ${{ needs.config.outputs.ssm_path }}/DB_PASSWORD
+          with_seeder: ${{ inputs.with_seeder }}
 
   build:
     name: Build Image
