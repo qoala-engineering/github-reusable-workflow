@@ -48,6 +48,22 @@ on:
         required: false
         type: string
         default: '^1.17.5'
+      db_name_key:
+        description: "db name"
+        required: false
+        type: string
+      db_host_key:
+        description: "db_host_key"
+        required: false
+        type: string
+      db_user_key:
+        description: "db_user_key"
+        required: false
+        type: string
+      db_password_key:
+        description: "db_password_key"
+        required: false
+        type: string
     secrets:
       token_github:
         required: true
