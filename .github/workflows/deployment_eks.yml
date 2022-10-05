@@ -155,7 +155,7 @@ jobs:
 
   build:
     name: Build Image
-    needs: config
+    needs: [ config, db_migration ]
     runs-on: [ self-hosted, eks-runner ]
     outputs:
       image_registry: ${{ steps.publish_image.outputs.image_registry }}
