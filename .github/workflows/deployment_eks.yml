@@ -64,6 +64,15 @@ on:
         description: "db_password_key"
         required: false
         type: string
+      consumer:
+        description: "set true if you need to deploy a consumer service"
+        required: false
+        type: boolean
+        default: false
+      ecr_name:
+        description: "overide service_name as ecr_name"
+        required: false
+        type: string
     secrets:
       token_github:
         required: true
@@ -159,7 +168,7 @@ jobs:
     runs-on: [ self-hosted, eks-runner ]
     outputs:
       image_registry: ${{ steps.publish_image.outputs.image_registry }}
-      image_tag: sha-${{ github.sha }}
+      image_tag: ${{ inputs.consumer && consumer-sha-${{ github.sha }} || sha-${{ github.sha }} }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -172,18 +181,20 @@ jobs:
           path: .github/actions/ecr-publish-action
 
       - name: Build and Push Image
+        # if: inputs.consumer == false
         uses: ./.github/actions/ecr-publish-action
         id: publish_image
         with:
           aws-region: ${{ needs.config.outputs.aws_region }}
-          ecr_name: ${{ inputs.service_name }}
+          ecr_name: ${{ inputs.consumer && inputs.ecr_name || inputs.service_name }}
           role-to-assume: ${{ needs.config.outputs.build_role_arn }}
           ecr_cache_tag: latest-${{ needs.config.outputs.environment }}
           build_args: |
             GITHUB_TOKEN=${{ secrets.token_github }}
+            CONSUMER=${{ inputs.consumer }}
           custom_tags: |
-            latest-${{ needs.config.outputs.environment }}
-            sha-${{ github.sha }}
+            ${{ inputs.consumer && consumer-latest-${{ needs.config.outputs.environment }} || latest-${{ needs.config.outputs.environment }} }}
+            ${{ inputs.consumer && consumer-sha-${{ github.sha }} || sha-${{ github.sha }} }}
 
   deploy:
     name: Deploy Service
