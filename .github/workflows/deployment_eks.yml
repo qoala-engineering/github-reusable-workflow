@@ -168,7 +168,7 @@ jobs:
     runs-on: [ self-hosted, eks-runner ]
     outputs:
       image_registry: ${{ steps.publish_image.outputs.image_registry }}
-      image_tag: ${{ inputs.consumer && consumer-sha-${{ github.sha }} || sha-${{ github.sha }} }}
+      image_tag: ${{ inputs.consumer && consumer-sha-github.sha || sha-github.sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -188,13 +188,13 @@ jobs:
           aws-region: ${{ needs.config.outputs.aws_region }}
           ecr_name: ${{ inputs.consumer && inputs.ecr_name || inputs.service_name }}
           role-to-assume: ${{ needs.config.outputs.build_role_arn }}
-          ecr_cache_tag: latest-${{ needs.config.outputs.environment }}
+          ecr_cache_tag: ${{ inputs.consumer && consumer-latest-needs.config.outputs.environment || latest-needs.config.outputs.environment }}
           build_args: |
             GITHUB_TOKEN=${{ secrets.token_github }}
             CONSUMER=${{ inputs.consumer }}
           custom_tags: |
-            ${{ inputs.consumer && consumer-latest-${{ needs.config.outputs.environment }} || latest-${{ needs.config.outputs.environment }} }}
-            ${{ inputs.consumer && consumer-sha-${{ github.sha }} || sha-${{ github.sha }} }}
+            ${{ inputs.consumer && consumer-latest-needs.config.outputs.environment || latest-needs.config.outputs.environment }}
+            ${{ inputs.consumer && consumer-sha-github.sha || sha-github.sha }}
 
   deploy:
     name: Deploy Service
