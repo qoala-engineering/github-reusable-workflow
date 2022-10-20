@@ -241,6 +241,7 @@ jobs:
           repository: qoala-engineering/helm-values-ssm-injection
           token: ${{ secrets.token_github }}
           path: .github/actions/helm-values-ssm-injection
+          ref: dev
 
       - name: SSM Injection
         id: values
@@ -249,6 +250,7 @@ jobs:
           image: ${{ needs.build.outputs.image_registry || needs.build.outputs.consumer_image_registry }}/${{ inputs.service_name }}:${{ needs.build.outputs.image_tag || needs.build.outputs.consumer_image_tag }}
           environment: ${{ needs.config.outputs.environment }}
           configPath: ${{ inputs.config_path }}
+          serviceName: ${{ inputs.service_name }}
  
       - name: Deploy service
         shell: bash
