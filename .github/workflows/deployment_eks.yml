@@ -248,7 +248,7 @@ jobs:
         id: values
         uses: ./.github/actions/helm-values-ssm-injection
         with:
-          image: ${{ needs.build.outputs.image_registry || needs.build.outputs.consumer_image_registry }}/${{ inputs.service_name }}:${{ needs.build.outputs.image_tag || needs.build.outputs.consumer_image_tag }}
+          image: ${{ needs.build.outputs.image_registry || needs.build.outputs.consumer_image_registry }}/${{ inputs.ecr_name || inputs.service_name }}:${{ needs.build.outputs.image_tag || needs.build.outputs.consumer_image_tag }}
           environment: ${{ needs.config.outputs.environment }}
           configPath: ${{ inputs.config_path }}
           serviceName: ${{ inputs.service_name }}
