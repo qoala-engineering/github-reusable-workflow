@@ -251,6 +251,7 @@ jobs:
           environment: ${{ needs.config.outputs.environment }}
           configPath: ${{ inputs.config_path }}
           serviceName: ${{ inputs.service_name }}
+          consumer: "\"${{ inputs.consumer }}\""
  
       - name: Deploy service
         shell: bash
