@@ -168,7 +168,9 @@ jobs:
     runs-on: [ self-hosted, eks-runner ]
     outputs:
       image_registry: ${{ steps.publish_image.outputs.image_registry }}
-      image_tag: ${{ (inputs.consumer && consumer-sha-"${{ github.sha }}") || sha-"${{ github.sha }}" }}
+      image_tag: sha-${{ github.sha }}
+      consumer_image_registry: ${{ steps.publish_image_consumer.outputs.image_registry }}
+      consumer_image_tag: consumer-${{ github.sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -181,20 +183,35 @@ jobs:
           path: .github/actions/ecr-publish-action
 
       - name: Build and Push Image
-        # if: inputs.consumer == false
+        if: inputs.consumer == false
         uses: ./.github/actions/ecr-publish-action
         id: publish_image
         with:
           aws-region: ${{ needs.config.outputs.aws_region }}
-          ecr_name: ${{ (inputs.consumer && inputs.ecr_name) || inputs.service_name }}
+          ecr_name: inputs.service_name
           role-to-assume: ${{ needs.config.outputs.build_role_arn }}
-          ecr_cache_tag: ${{ (inputs.consumer && consumer-latest-"${{ needs.config.outputs.environment }}") || latest-"${{ needs.config.outputs.environment }}" }}
+          ecr_cache_tag: latest-${{ needs.config.outputs.environment }}
+          build_args: |
+            GITHUB_TOKEN=${{ secrets.token_github }}
+          custom_tags: |
+            latest-${{ needs.config.outputs.environment }}
+            sha-${{ github.sha }}
+      
+      - name: Build and Push Image Consumer
+        if: inputs.consumer == true
+        uses: ./.github/actions/ecr-publish-action
+        id: publish_image_consumer
+        with:
+          aws-region: ${{ needs.config.outputs.aws_region }}
+          ecr_name: inputs.ecr_name
+          role-to-assume: ${{ needs.config.outputs.build_role_arn }}
+          ecr_cache_tag: consumer-latest-${{ needs.config.outputs.environment }}
           build_args: |
             GITHUB_TOKEN=${{ secrets.token_github }}
             CONSUMER=${{ inputs.consumer }}
           custom_tags: |
-            ${{ (inputs.consumer && consumer-latest-"${{ needs.config.outputs.environment }}") || latest-"${{ needs.config.outputs.environment }}" }}
-            ${{ (inputs.consumer && consumer-sha-"${{ github.sha }}") || sha-"${{ github.sha }}" }}
+            consumer-latest-${{ needs.config.outputs.environment }}
+            consumer-${{ github.sha }}
 
   deploy:
     name: Deploy Service
@@ -229,7 +246,7 @@ jobs:
         id: values
         uses: ./.github/actions/helm-values-ssm-injection
         with:
-          image: ${{ needs.build.outputs.image_registry }}/${{ inputs.service_name }}:${{ needs.build.outputs.image_tag }}
+          image: ${{ needs.build.outputs.image_registry || needs.build.outputs.consumer_image_registry }}/${{ inputs.service_name }}:${{ needs.build.outputs.image_tag || needs.build.outputs.consumer_image_tag }}
           environment: ${{ needs.config.outputs.environment }}
           configPath: ${{ inputs.config_path }}
  
