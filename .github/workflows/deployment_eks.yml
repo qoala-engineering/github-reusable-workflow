@@ -203,7 +203,7 @@ jobs:
         id: publish_image_consumer
         with:
           aws-region: ${{ needs.config.outputs.aws_region }}
-          ecr_name: inputs.ecr_name
+          ecr_name: ${{ inputs.ecr_name }}
           role-to-assume: ${{ needs.config.outputs.build_role_arn }}
           ecr_cache_tag: consumer-latest-${{ needs.config.outputs.environment }}
           build_args: |
