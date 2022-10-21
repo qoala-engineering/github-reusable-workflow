@@ -243,13 +243,13 @@ jobs:
           token: ${{ secrets.token_github }}
           path: .github/actions/helm-values-ssm-injection
           ref: dev
-
+      
       - name: SSM Injection
         id: values
         uses: ./.github/actions/helm-values-ssm-injection
         with:
-          image: ${{ needs.build.outputs.image_registry || needs.build.outputs.consumer_image_registry }}/${{ inputs.ecr_name || inputs.service_name }}:${{ needs.build.outputs.image_tag || needs.build.outputs.consumer_image_tag }}
-          environment: ${{ needs.config.outputs.environment }}
+          image: ${{ needs.build.outputs.consumer_image_registry }}/${{ inputs.ecr_name }}:${{ needs.build.outputs.consumer_image_tag }}
+          environment: ${{ (inputs.consumer == true && format('{0}_{1}', needs.config.outputs.environment, 'consumer')) || needs.config.outputs.environment}}
           configPath: ${{ inputs.config_path }}
           serviceName: ${{ inputs.service_name }}
           consumer: "\"${{ inputs.consumer }}\""
