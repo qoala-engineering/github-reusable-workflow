@@ -209,7 +209,6 @@ jobs:
           repository: qoala-engineering/setup-eks-helm-action
           token: ${{ secrets.token_github }}
           path: .github/actions/setup-eks-helm-action
-          ref: dev
 
       - uses: ./.github/actions/setup-eks-helm-action
         with:
@@ -224,7 +223,6 @@ jobs:
           repository: qoala-engineering/helm-values-ssm-injection
           token: ${{ secrets.token_github }}
           path: .github/actions/helm-values-ssm-injection
-          ref: dev
       
       - name: SSM Injection
         id: values
@@ -234,11 +232,6 @@ jobs:
           environment: ${{ (inputs.consumer == true && format('{0}_{1}', needs.config.outputs.environment, 'consumer')) || needs.config.outputs.environment}}
           configPath: ${{ inputs.config_path }}
           serviceName: ${{ inputs.service_name }}
-      
-      - name: Debug
-        shell: bash
-        run: |
-          cat ${{ steps.values.outputs.values }}
  
       - name: Deploy service
         shell: bash
