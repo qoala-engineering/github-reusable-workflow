@@ -234,6 +234,11 @@ jobs:
           environment: ${{ (inputs.consumer == true && format('{0}_{1}', needs.config.outputs.environment, 'consumer')) || needs.config.outputs.environment}}
           configPath: ${{ inputs.config_path }}
           serviceName: ${{ inputs.service_name }}
+      
+      - name: Debug
+        shell: bash
+        run: |
+          cat ${{ steps.values.outputs.values }}
  
       - name: Deploy service
         shell: bash
