@@ -73,9 +73,16 @@ on:
         description: "overide service_name as ecr_name"
         required: false
         type: string
+      with_ca_crt:
+        description: "provide option to insert ca.crt file from github secrets"
+        required: false
+        type: boolean
+        default: false
     secrets:
       token_github:
         required: true
+      ca_crt:
+        required: false
 
 name: Deployment Pipeline
 jobs:
@@ -179,6 +186,12 @@ jobs:
           repository: qoala-engineering/ecr-publish-action
           token: ${{ secrets.token_github }}
           path: .github/actions/ecr-publish-action
+      
+      - name: Inject CA CERT File
+        if: inputs.with_ca_crt == true
+        shell: bash
+        run: |
+          echo "${{ secrets.ca_crt }}" > ca.crt
 
       - name: Build and Push Image
         uses: ./.github/actions/ecr-publish-action
