@@ -78,10 +78,6 @@ on:
         required: false
         type: boolean
         default: false
-      seperate_build:
-        required: false
-        type: boolean
-        default: false
       docker_app:
         required: false
         type: string
@@ -182,13 +178,12 @@ jobs:
           node_version: ${{ inputs.node_version }}
 
   build:
-    if: input.seperate_build == false
     name: Build Image
     needs: [ config, db_migration ]
     runs-on: [ self-hosted, eks-runner ]
     outputs:
       image_registry: ${{ steps.publish_image.outputs.image_registry }}
-      image_tag: ${{ (inputs.consumer == true && format('{0}-{1}', 'consumer', github.sha)) || github.sha}}
+      image_tag: ${{ ((inputs.consumer == true || inputs.docker_consumer != '') && format('{0}-{1}', 'consumer', github.sha)) || github.sha}}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -213,16 +208,15 @@ jobs:
           aws-region: ${{ needs.config.outputs.aws_region }}
           ecr_name: ${{ inputs.ecr_name || inputs.service_name}}
           role-to-assume: ${{ needs.config.outputs.build_role_arn }}
-          ecr_cache_tag: ${{ (inputs.consumer == true && format('{0}-{1}', 'consumer-latest', needs.config.outputs.environment)) || format('{0}-{1}', 'latest', needs.config.outputs.environment) }}
+          ecr_cache_tag: ${{ ((inputs.consumer == true || inputs.docker_consumer != '') && format('{0}-{1}', 'consumer-latest', needs.config.outputs.environment)) || format('{0}-{1}', 'latest', needs.config.outputs.environment) }}
           build_args: |
             GITHUB_TOKEN=${{ secrets.token_github }}
             CONSUMER=${{ inputs.consumer }}
           custom_tags: |
-            ${{ (inputs.consumer == true && format('{0}-{1}', 'consumer-latest', needs.config.outputs.environment)) || format('{0}-{1}', 'latest', needs.config.outputs.environment)}}
-            ${{ (inputs.consumer == true && format('{0}-{1}', 'consumer', github.sha)) || github.sha}}
+            ${{ ((inputs.consumer == true || inputs.docker_consumer != '') && format('{0}-{1}', 'consumer-latest', needs.config.outputs.environment)) || format('{0}-{1}', 'latest', needs.config.outputs.environment)}}
+            ${{ ((inputs.consumer == true || inputs.docker.consumer != '') && format('{0}-{1}', 'consumer', github.sha)) || github.sha}}
 
   deploy:
-    if: input.seperate_build == false
     name: Deploy Service
     needs: [ config, build ]
     runs-on: [self-hosted, eks-runner]
@@ -256,7 +250,7 @@ jobs:
         uses: ./.github/actions/helm-values-ssm-injection
         with:
           image: ${{ needs.build.outputs.image_registry }}/${{ inputs.ecr_name || inputs.service_name }}:${{ needs.build.outputs.image_tag }}
-          environment: ${{ (inputs.consumer == true && format('{0}_{1}', needs.config.outputs.environment, 'consumer')) || needs.config.outputs.environment}}
+          environment: ${{ ((inputs.consumer == true || inputs.docker_consumer != '') && format('{0}_{1}', needs.config.outputs.environment, 'consumer')) || needs.config.outputs.environment}}
           configPath: ${{ inputs.config_path }}
           serviceName: ${{ inputs.service_name }}
  
@@ -264,117 +258,3 @@ jobs:
         shell: bash
         run: |
           helm upgrade --install --atomic --wait --namespace ${{ needs.config.outputs.namespace }} --create-namespace ${{ inputs.service_name }} .charts/charts/service -f ${{ steps.values.outputs.values }}
-
-  build_seperate:
-    if: input.seperate_build == true && input.docker_app != ''
-    name: Build Image
-    needs: [ config, db_migration ]
-    runs-on: [ self-hosted, eks-runner ]
-    outputs:
-      image_registry: ${{ steps.publish_image.outputs.image_registry }}
-      image_tag: ${{ github.sha }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Checkout ECR Publish GitHub Action Repo
-        uses: actions/checkout@v2
-        with:
-          repository: qoala-engineering/ecr-publish-action
-          token: ${{ secrets.token_github }}
-          path: .github/actions/ecr-publish-action
-      
-      - name: Inject CA CERT File
-        if: inputs.with_ca_crt == true
-        shell: bash
-        run: |
-          echo "${{ secrets.ca_crt }}" > ca.crt
-
-      - name: Build and Push Image App
-        uses: ./.github/actions/ecr-publish-action
-        id: publish_image
-        with:
-          aws-region: ${{ needs.config.outputs.aws_region }}
-          ecr_name: ${{ inputs.ecr_name || inputs.service_name}}
-          role-to-assume: ${{ needs.config.outputs.build_role_arn }}
-          dockerfile: Dockerfile.app
-          ecr_cache_tag: latest-app-${{ needs.config.outputs.environment)}}
-          build_args: |
-            GITHUB_TOKEN=${{ secrets.token_github }}
-          custom_tags: |
-            latest-app-${{ needs.config.outputs.environment)}}
-            ${{ github.sha }}-app
-
-      - name: Build and Push Image Consumer
-        if: input.docker_consumer != ''
-        uses: ./.github/actions/ecr-publish-action
-        with:
-          aws-region: ${{ needs.config.outputs.aws_region }}
-          ecr_name: ${{ inputs.ecr_name || inputs.service_name}}
-          role-to-assume: ${{ needs.config.outputs.build_role_arn }}
-          dockerfile: Dockerfile.consumer
-          ecr_cache_tag: latest-consumer-${{ needs.config.outputs.environment)}}
-          build_args: |
-            GITHUB_TOKEN=${{ secrets.token_github }}
-          custom_tags: |
-            latest-consumer-${{ needs.config.outputs.environment)}}
-            ${{ github.sha }}-consumer
-
-  deploy_seperate:
-    if: input.seperate_build == true && input.docker_app != ''
-    name: Deploy Service
-    needs: [ config, build ]
-    runs-on: [self-hosted, eks-runner]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Checkout GitHub Action Repo
-        uses: actions/checkout@v2
-        with:
-          repository: qoala-engineering/setup-eks-helm-action
-          token: ${{ secrets.token_github }}
-          path: .github/actions/setup-eks-helm-action
-
-      - uses: ./.github/actions/setup-eks-helm-action
-        with:
-          aws-region: ${{ needs.config.outputs.aws_region }}
-          role-to-assume: ${{ needs.config.outputs.deploy_role_arn }}
-          github-token: ${{ secrets.token_github }}
-          cluster-name: ${{ needs.config.outputs.eks_cluster }}
-      
-      - name: Checkout SSM Injection
-        uses: actions/checkout@v2
-        with:
-          repository: qoala-engineering/helm-values-ssm-injection
-          token: ${{ secrets.token_github }}
-          path: .github/actions/helm-values-ssm-injection
-      
-      - name: SSM Injection App
-        id: values_app
-        uses: ./.github/actions/helm-values-ssm-injection
-        with:
-          image: ${{ needs.build.outputs.image_registry }}/${{ inputs.ecr_name || inputs.service_name }}:${{ needs.build.outputs.image_tag }}-app
-          environment: ${{ needs.config.outputs.environment }}
-          configPath: ${{ inputs.config_path }}
-          serviceName: ${{ inputs.service_name }}
- 
-      - name: SSM Injection Consumer
-        id: values_consumer
-        uses: ./.github/actions/helm-values-ssm-injection
-        with:
-          image: ${{ needs.build.outputs.image_registry }}/${{ inputs.ecr_name || inputs.service_name }}:${{ needs.build.outputs.image_tag }}-consumer
-          environment: ${{ needs.config.outputs.environment }}_consumer
-          configPath: ${{ inputs.config_path }}
-          serviceName: ${{ inputs.service_name }}
-
-      - name: Deploy service app
-        shell: bash
-        run: |
-          helm upgrade --install --atomic --wait --namespace ${{ needs.config.outputs.namespace }} --create-namespace ${{ inputs.service_name }} .charts/charts/service -f ${{ steps.values_app.outputs.values }}
-
-      - name: Deploy service consumer
-        if: input.docker_consumer != ''
-        shell: bash
-        run: |
-          helm upgrade --install --atomic --wait --namespace ${{ needs.config.outputs.namespace }} --create-namespace ${{ inputs.service_name }} .charts/charts/service -f ${{ steps.values_consumer.outputs.values }}
