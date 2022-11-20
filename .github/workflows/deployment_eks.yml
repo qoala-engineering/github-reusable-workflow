@@ -82,6 +82,10 @@ on:
         required: false
         type: string
         description: 'docker file'
+      ssm_folder:
+        required: false
+        type: string
+        description: 'ssm folder'
     secrets:
       token_github:
         required: true
@@ -118,6 +122,7 @@ jobs:
           bu: ${{ inputs.bu }}
           environment: ${{ inputs.environment }}
           service_name: ${{ inputs.service_name }}
+          ssm_folder: ${{ inputs.ssm_folder }}
 
   db_migration:
     name: DB Migration
