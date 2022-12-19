@@ -123,6 +123,18 @@ jobs:
           environment: ${{ inputs.environment }}
           service_name: ${{ inputs.service_name }}
           ssm_folder: ${{ inputs.ssm_folder }}
+      
+      - name: Debug output
+        run: |
+          echo "environment: ${{ steps.config.outputs.environment }}"
+          echo "eks_cluster: ${{ steps.config.outputs.eks_cluster }}"
+          echo "namespace: ${{ steps.config.outputs.namespace }}"
+          echo "build_role_arn: ${{ steps.config.outputs.build_role_arn }}"
+          echo "deploy_role_arn: ${{ steps.config.outputs.deploy_role_arn }}"
+          echo "aws_region: ${{ steps.config.outputs.aws_region }}"
+          echo "ssm_role_arn: ${{ steps.config.outputs.ssm_role_arn }}"
+          echo "ssm_path: ${{ steps.config.outputs.ssm_path }}"
+          echo "node_env: ${{ steps.config.outputs.node_env }}"
 
   db_migration:
     name: DB Migration
