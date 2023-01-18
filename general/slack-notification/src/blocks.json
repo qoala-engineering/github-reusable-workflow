@@ -1,0 +1,72 @@
+[
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": ":sound: Attention here! :sound:\nOur team {{publisherTeam}} is preparing to release a deployment. :tada:\nWe have tested the deployment thoroughly and are confident that it is ready for release."
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "header",
+    "text": {
+      "type": "plain_text",
+      "text": "Release Deployment detail",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Service:*\n<{{serviceUrl}}|{{serviceName}}>"
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Deployment Time:*\n{{deployedAt}}"
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Release List:*\n{{releaseNotes}}"
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Release Docs:*\n<{{releaseDocs}}|Click here>"
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Status:*\n{{status}}"
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+        "type": "mrkdwn",
+        "text": "\n"
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "Audience: {{audiences}}"
+    }
+  }
+]
