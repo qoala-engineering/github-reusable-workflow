@@ -190,7 +190,7 @@ jobs:
         id: status_db_migration
         shell: bash
         run: |
-          ./dbmate -u "mysql://${{ inputs.db_user_key }}:${{ inputs.db_password_key }}@${{ inputs.db_host_key }}:${{ inputs.db_port_key }}/${{ inputs.db_name_key }}" -d "${{ inputs.db_migration_path }}" --no-dump-schema up
+          ./dbmate -u "mysql://${{ inputs.db_user_key }}:${{ inputs.db_password_key }}@${{ inputs.db_host_key }}:3306/${{ inputs.db_name_key }}" -d "${{ inputs.db_migration_path }}" --no-dump-schema up
 
 
   build:
