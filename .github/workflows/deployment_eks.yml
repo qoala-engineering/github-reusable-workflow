@@ -178,6 +178,21 @@ jobs:
           with_seeder: ${{ inputs.with_seeder }}
           node_version: ${{ inputs.node_version }}
 
+      - name: Install dbmate
+        if: inputs.with_db_migration == true && inputs.lang == 'python'
+        id: install_db_lib
+        run: |
+          curl -fsSL https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64 > dbmate
+          chmod +x dbmate
+
+      - name: DB Migration Status
+        if: inputs.with_db_migration == true && inputs.lang == 'python'
+        id: status_db_migration
+        shell: bash
+        run: |
+          ./dbmate -u "mysql://${{ inputs.db_user_key }}:${{ inputs.db_password_key }}@${{ inputs.db_host_key }}:${{ inputs.db_port_key }}/${{ inputs.db_name_key }}" -d "${{ inputs.db_migration_path }}" --no-dump-schema up
+
+
   build:
     name: Build Image
     needs: [ config, db_migration ]
