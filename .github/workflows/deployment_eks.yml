@@ -185,7 +185,16 @@ jobs:
           curl -fsSL https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64 > dbmate
           chmod +x dbmate
 
+      - name: Configure AWS credentials from Production account
+        if: inputs.with_db_migration == true && inputs.lang == 'python'
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ needs.config.outputs.deploy_role_arn }}
+          aws-region: ${{ needs.config.outputs.aws_region }}
+          role-duration-seconds: 3600
+      
       - name: Get env from AWS SSM
+        if: inputs.with_db_migration == true && inputs.lang == 'python'
         uses: dkershner6/aws-ssm-getparameters-action@v1
         with:
           parameterPairs: "/qoala/uat/app/rule-engine-service/DATABASE_NAME = DB_NAME,
