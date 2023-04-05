@@ -189,7 +189,7 @@ jobs:
         if: inputs.with_db_migration == true && inputs.lang == 'python'
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ needs.config.outputs.deploy_role_arn }}
+          role-to-assume: ${{ needs.config.outputs.ssm_role_arn}}
           aws-region: ap-southeast-1
           role-duration-seconds: 3600
       
