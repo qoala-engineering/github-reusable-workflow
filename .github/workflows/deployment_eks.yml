@@ -185,6 +185,14 @@ jobs:
           curl -fsSL https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64 > dbmate
           chmod +x dbmate
 
+      - name: Get env from AWS SSM
+        uses: dkershner6/aws-ssm-getparameters-action@v1
+        with:
+          parameterPairs: "/qoala/dev/db/STANDARDIZATION_HOST = DB_HOST,
+              /qoala/dev/db/STANDARDIZATION_USERNAME = DB_USER,
+              /qoala/dev/db/STANDARDIZATION_PASSWORD = DB_PASSWORD"
+          withDecryption: "true"
+
       - name: DB Migration Status
         if: inputs.with_db_migration == true && inputs.lang == 'python'
         id: status_db_migration
