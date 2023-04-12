@@ -203,7 +203,7 @@ jobs:
         with:
           parameterPairs: "${{ needs.config.outputs.ssm_path }}/${{ inputs.db_name_key }} = DB_NAME,
               ${{ needs.config.outputs.ssm_path }}/${{ inputs.db_host_key }} = DB_HOST,
-              ${{ needs.config.outputs.ssm_path }}/${{ inputs.db_user_key }},
+              ${{ needs.config.outputs.ssm_path }}/${{ inputs.db_user_key }} = DB_USER,
               ${{ needs.config.outputs.ssm_path }}/${{ inputs.db_password_key }} = DB_PASSWORD"
           withDecryption: "true"
 
