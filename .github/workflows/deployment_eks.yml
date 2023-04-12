@@ -182,12 +182,12 @@ jobs:
           with_seeder: ${{ inputs.with_seeder }}
           node_version: ${{ inputs.node_version }}
 
-      - name: Install dbmate
-        if: inputs.with_db_migration == true && inputs.lang == 'python'
-        id: install_db_lib
-        run: |
-          curl -fsSL https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64 > dbmate
-          chmod +x dbmate
+      # - name: Install dbmate
+      #   if: inputs.with_db_migration == true && inputs.lang == 'python'
+      #   id: install_db_lib
+      #   run: |
+      #     curl -fsSL https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64 > dbmate
+      #     chmod +x dbmate
 
       - name: Configure AWS credentials from Production account
         if: inputs.with_db_migration == true && inputs.lang == 'python'
@@ -201,10 +201,10 @@ jobs:
         if: inputs.with_db_migration == true && inputs.lang == 'python'
         uses: dkershner6/aws-ssm-getparameters-action@v1
         with:
-          parameterPairs: "/qoala/uat/app/rule-engine-service/DATABASE_NAME = DB_NAME,
-              /qoala/uat/app/rule-engine-service/DATABASE_HOST = DB_HOST,
-              /qoala/uat/app/rule-engine-service/DATABASE_USER = DB_USER,
-              /qoala/uat/app/rule-engine-service/DATABASE_PASSWORD = DB_PASSWORD"
+          parameterPairs: "${{ needs.config.outputs.ssm_path }}/${{ inputs.db_name_key }} = DB_NAME,
+              ${{ needs.config.outputs.ssm_path }}/${{ inputs.db_host_key }} = DB_HOST,
+              ${{ needs.config.outputs.ssm_path }}/${{ inputs.db_user_key }},
+              ${{ needs.config.outputs.ssm_path }}/${{ inputs.db_password_key }} = DB_PASSWORD"
           withDecryption: "true"
 
       - name: DB Migration Status
@@ -212,7 +212,7 @@ jobs:
         id: status_db_migration
         shell: bash
         run: |
-          ./dbmate -u "mysql://$DB_USER:$DB_PASSWORD@$DB_HOST:3306/$DB_NAME" -d "./database/migrations" --no-dump-schema up
+          dbmate -u "mysql://$DB_USER:$DB_PASSWORD@$DB_HOST:3306/$DB_NAME" -d "./database/migrations" --no-dump-schema up
 
 
   build:
