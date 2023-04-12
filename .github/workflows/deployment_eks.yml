@@ -182,13 +182,6 @@ jobs:
           with_seeder: ${{ inputs.with_seeder }}
           node_version: ${{ inputs.node_version }}
 
-      # - name: Install dbmate
-      #   if: inputs.with_db_migration == true && inputs.lang == 'python'
-      #   id: install_db_lib
-      #   run: |
-      #     curl -fsSL https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64 > dbmate
-      #     chmod +x dbmate
-
       - name: Configure AWS credentials from Production account
         if: inputs.with_db_migration == true && inputs.lang == 'python'
         uses: aws-actions/configure-aws-credentials@v2
