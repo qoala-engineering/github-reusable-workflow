@@ -73,6 +73,10 @@ on:
         description: "overide service_name as ecr_name"
         required: false
         type: string
+      ecr_region:
+        description: "ECR AWS Region"
+        required: false
+        type: string
       with_ca_crt:
         description: "provide option to insert ca.crt file from github secrets"
         required: false
@@ -206,7 +210,7 @@ jobs:
         uses: ./.github/actions/ecr-publish-action
         id: publish_image
         with:
-          aws-region: ${{ needs.config.outputs.aws_region }}
+          aws-region: ${{ inputs.ecr_region || needs.config.outputs.aws_region }}
           ecr_name: ${{ inputs.ecr_name || inputs.service_name}}
           role-to-assume: ${{ needs.config.outputs.build_role_arn }}
           dockerfile: ${{ (inputs.dockerfile != '' && inputs.dockerfile) || 'Dockerfile' }}
