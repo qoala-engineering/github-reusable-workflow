@@ -314,6 +314,7 @@ jobs:
           helm upgrade --install --atomic --wait --namespace ${{ needs.config.outputs.namespace }} --create-namespace ${{ inputs.service_name }} .charts/charts/service -f ${{ steps.values.outputs.values }}
 
   regression_test:
+    name: Regression Test
     runs-on: [self-hosted,eks-runner]
     needs: [ config, deploy ]
     if: inputs.with_regression_test == true
