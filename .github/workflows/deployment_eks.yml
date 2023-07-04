@@ -86,6 +86,52 @@ on:
         required: false
         type: string
         description: 'ssm folder'
+      katalon_api_key:
+        required: false
+        description: ''
+        type: string
+        default: KATALON_API_KEY
+      test_suite_collection_path:
+        required: false
+        description: ''
+        type: string
+        default: "Test Suites/QoalaPlus_RegressionTest"
+      execution_profile:
+        required: false
+        description: ''
+        type: string
+        default: "DEV_ACTION"
+      browser_type:
+        required: false
+        description: ''
+        type: string
+        default: "Chrome (headless)"
+      java_distribution:
+        description: "Java distribution to run Katalon"
+        required: false
+        default: zulu
+        type: string
+      java_version:
+        description: "Java version to run Katalon"
+        required: false
+        default: '8'
+        type: string
+      katalon_secret_ssm_key:
+        description: "Katalon JSON secret SSM Key."
+        required: false
+        default: JSON_SECRET
+        type: string
+      katalon_version:
+        description: "Katalon Version"
+        required: false
+        default: '8.3.0'
+        type: string
+      with_regression_test:
+        description: ''
+        required: false
+        default: false
+        type: boolean
+      
     secrets:
       token_github:
         required: true
@@ -260,3 +306,34 @@ jobs:
         shell: bash
         run: |
           helm upgrade --install --atomic --wait --namespace ${{ needs.config.outputs.namespace }} --create-namespace ${{ inputs.service_name }} .charts/charts/service -f ${{ steps.values.outputs.values }}
+
+  regression_test:
+    runs-on: [self-hosted,eks-runner]
+    needs: [ config, deploy ]
+    if: inputs.with_regression_test == true
+    continue-on-error: true
+    steps:
+      - name: Checkout GitHub Action Repo
+        uses: actions/checkout@v2
+        with:
+          repository: qoala-engineering/automation-test-action
+          token: ${{ secrets.token_github }}
+          path: .github/actions/automation-test-action
+
+      - name: QA Automation Test
+        uses: ./.github/actions/automation-test-action
+        env:
+          GIT_HUB_TOKEN: ${{ secrets.token_github }}
+        with: 
+          role-to-assume: ${{ needs.config.outputs.ssm_role_arn }}
+          aws-region: ${{ needs.config.outputs.aws_region }}
+          java-distribution: ${{ inputs.java_distribution }}
+          java-version: ${{ inputs.java_version }}
+          ssm-key: ${{ inputs.katalon_secret_ssm_key }}
+          env: ${{ needs.config.outputs.environment }}
+          bu: ${{ inputs.bu }}
+          katalon-version: ${{ inputs.katalon_version }}
+          test-suite-collection-path: ${{ inputs.test_suite_collection_path }}
+          browser-type: ${{ inputs.browser_type }}
+          api-key: ${{ inputs.katalon_api_key }}
+          execution-profile: ${{ inputs.execution_profile }}
