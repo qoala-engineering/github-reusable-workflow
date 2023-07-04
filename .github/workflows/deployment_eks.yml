@@ -131,6 +131,11 @@ on:
         required: false
         default: false
         type: boolean
+      allowed_branches:
+        description: 'allowed_branches'
+        required: false
+        default: ''
+        type: string
       
     secrets:
       token_github:
@@ -169,6 +174,7 @@ jobs:
           environment: ${{ inputs.environment }}
           service_name: ${{ inputs.service_name }}
           ssm_folder: ${{ inputs.ssm_folder }}
+          allowed_branches: ${{ inputs.allowed_branches }}
 
   db_migration:
     name: DB Migration
