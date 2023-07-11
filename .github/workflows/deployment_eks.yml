@@ -165,6 +165,7 @@ jobs:
           repository: qoala-engineering/generate-config-action
           token: ${{ secrets.token_github }}
           path: .github/actions/generate-config-action
+          ref: 'staging-factory-feature'
       
       - name: Generate Config
         uses: ./.github/actions/generate-config-action
@@ -298,6 +299,7 @@ jobs:
           repository: qoala-engineering/helm-values-ssm-injection
           token: ${{ secrets.token_github }}
           path: .github/actions/helm-values-ssm-injection
+          ref: 'staging-factory-feature'
       
       - name: SSM Injection
         id: values
