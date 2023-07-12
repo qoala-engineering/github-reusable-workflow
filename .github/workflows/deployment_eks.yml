@@ -285,6 +285,7 @@ jobs:
           repository: qoala-engineering/setup-eks-helm-action
           token: ${{ secrets.token_github }}
           path: .github/actions/setup-eks-helm-action
+          ref: staging-factory-feature
 
       - uses: ./.github/actions/setup-eks-helm-action
         with:
