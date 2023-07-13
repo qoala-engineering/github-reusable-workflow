@@ -152,6 +152,8 @@ on:
         required: true
       ca_crt:
         required: false
+      DEVOPS_SLACK_BOT_TOKEN:
+        required: false
 
 name: Deployment Pipeline
 jobs:
@@ -213,6 +215,7 @@ jobs:
           }
   config: 
     name: Generate Config 
+    needs: [ notification ]
     runs-on: [ self-hosted, eks-runner ]
     outputs:
       environment: ${{ steps.config.outputs.environment }}
