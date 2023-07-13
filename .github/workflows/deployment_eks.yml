@@ -175,10 +175,8 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "Staging Factory: New Environment for ${{ inputs.repo_name }}"
-                },
-                "block_id": "deployment_sectio",
-                "color": "#007BFF"
+                  "text": "*Staging Factory: New Environment for ${{ inputs.repo_name }}*"
+                }
               },
               {
                 "type": "section",
@@ -200,7 +198,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "Deployment Status: In progress:hourglass_flowing_sand"
+                  "text": "Deployment Status: In progress:hourglass_flowing_sand:"
                 }
               },
               {
@@ -420,9 +418,7 @@ jobs:
                   "text": {
                     "type": "mrkdwn",
                     "text": "Staging Factory: New Environment for ${{ inputs.repo_name }}"
-                  },
-                  "block_id": "deployment_section",
-                  "color": "#28A745"
+                  }
                 },
                 {
                   "type": "section",
