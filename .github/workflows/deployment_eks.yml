@@ -189,7 +189,6 @@ jobs:
 
   db_migration:
     name: DB Migration
-    if: inputs.with_db_migration == true 
     needs: config
     runs-on: [ self-hosted, eks-runner ]
     steps:
