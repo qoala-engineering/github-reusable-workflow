@@ -209,9 +209,8 @@ jobs:
                 ]
               }
           }
-
       env:
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        SLACK_BOT_TOKEN: ${{ secrets.DEVOPS_SLACK_BOT_TOKEN }}
   config: 
     name: Generate Config 
     runs-on: [ self-hosted, eks-runner ]
@@ -469,7 +468,7 @@ jobs:
               ]
             }
         env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.DEVOPS_SLACK_BOT_TOKEN }}
 
   regression_test:
     name: Regression Test
