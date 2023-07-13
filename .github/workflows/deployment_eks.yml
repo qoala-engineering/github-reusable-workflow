@@ -155,6 +155,63 @@ on:
 
 name: Deployment Pipeline
 jobs:
+  notification:
+    runs-on: [ self-hosted, eks-runner ]
+    name: Notify to Slack
+    steps:
+    - name: Send notifications to Slack
+      id: slack
+      uses: slackapi/slack-github-action@v1.24.0
+      with:
+        channel-id: 'C05HKCVBPDW' # ID of Slack Channel you want to post to
+        payload: |
+          {
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "Staging Factory: New Environment for ${{ inputs.repo_name }}"
+                },
+                "block_id": "deployment_sectio",
+                "color": "#007BFF"
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Application:* ${{ inputs.repo_name }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Environment:* ${{ inputs.environment }}"
+                  }
+                ]
+              },
+              {
+                "type": "divider"
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "Deployment Status: In progress:hourglass_flowing_sand"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Github Workflow:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
+                  }
+                ]
+              }
+          }
+
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
   config: 
     name: Generate Config 
     runs-on: [ self-hosted, eks-runner ]
@@ -292,7 +349,7 @@ jobs:
 
   deploy:
     name: Deploy Service
-    needs: [ config, build ]
+    needs: [ config, build, notification ]
     runs-on: [self-hosted, eks-runner]
     steps:
       - name: Checkout
@@ -340,9 +397,79 @@ jobs:
           serviceName: ${{ inputs.service_name }}
  
       - name: Deploy service
+        id: helm
         shell: bash
         run: |
           helm upgrade --install --atomic --wait --namespace ${{ needs.config.outputs.namespace }} --create-namespace ${{ inputs.service_name }} .charts/charts/service -f ${{ steps.values.outputs.values }}
+
+      - name: Update status
+        if: ${{ steps.helm.conclusion }} == 'success'
+        id: slack
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: 'C05HKCVBPDW' # ID of Slack Channel you want to post to
+          update-ts: ${{ needs.steps.notification.slack.outputs.ts }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Staging Factory: New Environment for ${{ inputs.repo_name }}"
+                  },
+                  "block_id": "deployment_section",
+                  "color": "#28A745"
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Application:* ${{ inputs.repo_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Environment:* ${{ inputs.environment }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Deployment Status: Success:white_check_mark:"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*API Host:* https://api.${{ inputs.environment }}.uat.qoalaplus.com"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Grafana Logs:* <https://grafana.uat.qoala.app/d/liz0yRCZz/logs-app?orgId=1&var-app=${{ inputs.environment}}-${{ inputs.bu }}%2F${{ inputs.service_name }}&var-search=|View Logs Logs>"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Github Workflow:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
   regression_test:
     name: Regression Test
