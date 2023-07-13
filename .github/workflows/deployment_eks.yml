@@ -136,6 +136,16 @@ on:
         required: false
         default: ''
         type: string
+      repo_name:
+        description: 'Repository Name'
+        required: false
+        default: ''
+        type: string
+      branch_name:
+        description: 'Branch Name'
+        required: false
+        default: ''
+        type: string
       
     secrets:
       token_github:
@@ -165,7 +175,7 @@ jobs:
           repository: qoala-engineering/generate-config-action
           token: ${{ secrets.token_github }}
           path: .github/actions/generate-config-action
-          ref: 'staging-factory-feature'
+          ref: staging-factory-feature
       
       - name: Generate Config
         uses: ./.github/actions/generate-config-action
@@ -179,6 +189,7 @@ jobs:
 
   db_migration:
     name: DB Migration
+    if: inputs.with_db_migration == true 
     needs: config
     runs-on: [ self-hosted, eks-runner ]
     steps:
@@ -240,7 +251,16 @@ jobs:
       image_tag: ${{ (inputs.consumer == true && format('{0}-{1}', 'consumer', github.sha)) || github.sha}}
     steps:
       - name: Checkout
+        if: inputs.repo_name == ''
         uses: actions/checkout@v2
+
+      - name: Disposable Env Checkout 
+        if: inputs.repo_name != ''
+        uses: actions/checkout@v2
+        with:
+          repository: qoala-engineering/${{ inputs.repo_name }}
+          token: ${{ secrets.token_github }}
+          ref: ${{ inputs.branch_name }}
 
       - name: Checkout ECR Publish GitHub Action Repo
         uses: actions/checkout@v2
@@ -277,7 +297,16 @@ jobs:
     runs-on: [self-hosted, eks-runner]
     steps:
       - name: Checkout
+        if: inputs.repo_name == ''
         uses: actions/checkout@v2
+
+      - name: Disposable Env Checkout 
+        if: inputs.repo_name != ''
+        uses: actions/checkout@v2
+        with:
+          repository: qoala-engineering/${{ inputs.repo_name }}
+          token: ${{ secrets.token_github }}
+          ref: ${{ inputs.branch_name }}
 
       - name: Checkout GitHub Action Repo
         uses: actions/checkout@v2
@@ -300,7 +329,7 @@ jobs:
           repository: qoala-engineering/helm-values-ssm-injection
           token: ${{ secrets.token_github }}
           path: .github/actions/helm-values-ssm-injection
-          ref: 'staging-factory-feature'
+          ref: staging-factory-feature
       
       - name: SSM Injection
         id: values
