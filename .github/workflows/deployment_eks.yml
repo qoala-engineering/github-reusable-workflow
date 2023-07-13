@@ -212,6 +212,7 @@ jobs:
                   }
                 ]
               }
+            ]
           }
   config: 
     name: Generate Config 
