@@ -162,6 +162,8 @@ jobs:
     - name: Send notifications to Slack
       id: slack
       uses: slackapi/slack-github-action@v1.24.0
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.DEVOPS_SLACK_BOT_TOKEN }}
       with:
         channel-id: 'C05HKCVBPDW' # ID of Slack Channel you want to post to
         payload: |
@@ -209,8 +211,6 @@ jobs:
                 ]
               }
           }
-      env:
-        SLACK_BOT_TOKEN: ${{ secrets.DEVOPS_SLACK_BOT_TOKEN }}
   config: 
     name: Generate Config 
     runs-on: [ self-hosted, eks-runner ]
