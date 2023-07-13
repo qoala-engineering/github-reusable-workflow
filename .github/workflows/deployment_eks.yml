@@ -409,7 +409,7 @@ jobs:
         uses: slackapi/slack-github-action@v1.24.0
         with:
           channel-id: 'C05HKCVBPDW' # ID of Slack Channel you want to post to
-          update-ts: ${{ needs.steps.notification.slack.outputs.ts }}
+          update-ts: ${{ needs.notification.steps.slack.outputs.ts }}
           payload: |
             {
               "blocks": [
@@ -417,7 +417,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Staging Factory: New Environment for ${{ inputs.repo_name }}"
+                    "text": "*Staging Factory: New Environment for ${{ inputs.repo_name }}*"
                   }
                 },
                 {
@@ -440,7 +440,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Deployment Status: Success:white_check_mark:"
+                    "text": "Deployment Status: Success :white_check_mark:"
                   }
                 },
                 {
@@ -452,7 +452,7 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Grafana Logs:* <https://grafana.uat.qoala.app/d/liz0yRCZz/logs-app?orgId=1&var-app=${{ inputs.environment}}-${{ inputs.bu }}%2F${{ inputs.service_name }}&var-search=|View Logs Logs>"
+                      "text": "*Grafana Logs:* <https://grafana.uat.qoala.app/d/liz0yRCZz/logs-app?orgId=1&var-app=${{ inputs.environment}}-${{ inputs.bu }}%2F${{ inputs.service_name }}&var-search=|View Logs>"
                     }
                   ]
                 },
