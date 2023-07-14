@@ -246,9 +246,6 @@ jobs:
           service_name: ${{ inputs.service_name }}
           ssm_folder: ${{ inputs.ssm_folder }}
           allowed_branches: ${{ inputs.allowed_branches }}
-      
-      - name: check ts
-        run: echo ${{ needs.notification.outputs.ts }}
 
   db_migration:
     name: DB Migration
@@ -414,7 +411,7 @@ jobs:
         uses: slackapi/slack-github-action@v1.24.0
         with:
           channel-id: 'C05HKCVBPDW' # ID of Slack Channel you want to post to
-          update-ts: ${{ needs.notification.steps.slack.outputs.ts }}
+          update-ts: ${{ needs.notification.outputs.ts }}
           payload: |
             {
               "blocks": [
