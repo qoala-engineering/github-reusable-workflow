@@ -169,7 +169,7 @@ jobs:
       env:
         SLACK_BOT_TOKEN: ${{ secrets.DEVOPS_SLACK_BOT_TOKEN }}
       with:
-        channel-id: 'C05HKCVBPDW' # ID of Slack Channel you want to post to
+        channel-id: 'C05HQDA9L8G' # ID of Slack Channel you want to post to
         payload: |
           {
             "blocks": [
@@ -410,7 +410,7 @@ jobs:
         id: slack
         uses: slackapi/slack-github-action@v1.24.0
         with:
-          channel-id: 'C05HKCVBPDW' # ID of Slack Channel you want to post to
+          channel-id: 'C05HQDA9L8G' # ID of Slack Channel you want to post to
           update-ts: ${{ needs.notification.outputs.ts }}
           payload: |
             {
