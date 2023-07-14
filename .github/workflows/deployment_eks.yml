@@ -164,7 +164,7 @@ jobs:
       ts: ${{ steps.slack.outputs.ts }}
     steps:
     - name: check current dir
-      run: ls -a
+      run: ls -a ../
 
     - name: Send notifications to Slack
       id: slack
