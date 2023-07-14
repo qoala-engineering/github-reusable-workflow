@@ -248,7 +248,7 @@ jobs:
           allowed_branches: ${{ inputs.allowed_branches }}
       
       - name: check ts
-        run: echo ${{ needs.notification.steps.slack.outputs.ts }}
+        run: echo ${{ needs.notification.outputs.ts }}
 
   db_migration:
     name: DB Migration
