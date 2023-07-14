@@ -244,6 +244,9 @@ jobs:
           service_name: ${{ inputs.service_name }}
           ssm_folder: ${{ inputs.ssm_folder }}
           allowed_branches: ${{ inputs.allowed_branches }}
+      
+      - name: check ts
+        run: echo ${{ needs.notification.steps.slack.outputs.ts }}
 
   db_migration:
     name: DB Migration
