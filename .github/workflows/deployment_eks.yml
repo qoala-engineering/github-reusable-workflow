@@ -170,50 +170,8 @@ jobs:
         SLACK_BOT_TOKEN: ${{ secrets.DEVOPS_SLACK_BOT_TOKEN }}
       with:
         channel-id: 'C05HQDA9L8G' # ID of Slack Channel you want to post to
-        payload: |
-          {
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "*Staging Factory: New Environment for ${{ inputs.repo_name }}*"
-                }
-              },
-              {
-                "type": "section",
-                "fields": [
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Application:* ${{ inputs.repo_name }}"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Environment:* ${{ inputs.environment }}"
-                  }
-                ]
-              },
-              {
-                "type": "divider"
-              },
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "Deployment Status: In progress:hourglass_flowing_sand:"
-                }
-              },
-              {
-                "type": "section",
-                "fields": [
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Github Workflow:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
-                  }
-                ]
-              }
-            ]
-          }
+        payload-file-path: "../slack-payloads/in-progress.json"
+
   config: 
     name: Generate Config 
     needs: [ notification ]
@@ -412,63 +370,7 @@ jobs:
         with:
           channel-id: 'C05HQDA9L8G' # ID of Slack Channel you want to post to
           update-ts: ${{ needs.notification.outputs.ts }}
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Staging Factory: New Environment for ${{ inputs.repo_name }}*"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Application:* ${{ inputs.repo_name }}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Environment:* ${{ inputs.environment }}"
-                    }
-                  ]
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Deployment Status: Success :white_check_mark:"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*API Host:* https://api.${{ inputs.environment }}.uat.qoalaplus.com"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Grafana Logs:* <https://grafana.uat.qoala.app/d/liz0yRCZz/logs-app?orgId=1&var-app=${{ inputs.environment}}-${{ inputs.bu }}%2F${{ inputs.service_name }}&var-search=|View Logs>"
-                    }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Github Workflow:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
-                    }
-                  ]
-                }
-              ]
-            }
+          payload-file-path: "../slack-payloads/success.json"
         env:
           SLACK_BOT_TOKEN: ${{ secrets.DEVOPS_SLACK_BOT_TOKEN }}
 

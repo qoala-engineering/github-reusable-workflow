@@ -1,0 +1,43 @@
+{
+    "blocks": [
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Staging Factory: New Environment for ${{ inputs.repo_name }}*"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Application:* ${{ inputs.repo_name }}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Environment:* ${{ inputs.environment }}"
+          }
+        ]
+      },
+      {
+        "type": "divider"
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "Deployment Status: In progress:hourglass_flowing_sand:"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Github Workflow:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
+          }
+        ]
+      }
+    ]
+}
