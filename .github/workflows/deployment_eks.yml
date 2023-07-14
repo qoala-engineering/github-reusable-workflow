@@ -164,8 +164,8 @@ jobs:
       ts: ${{ steps.slack.outputs.ts }}
     steps:
     - name: check current dir
-      run: ls -d $PWD/*
-      
+      run: ls -a
+
     - name: Send notifications to Slack
       id: slack
       uses: slackapi/slack-github-action@v1.24.0
@@ -173,7 +173,7 @@ jobs:
         SLACK_BOT_TOKEN: ${{ secrets.DEVOPS_SLACK_BOT_TOKEN }}
       with:
         channel-id: 'C05HQDA9L8G' # ID of Slack Channel you want to post to
-        payload-file-path: "../slack-payloads/in-progress.json"
+        payload-file-path: "./slack-payloads/in-progress.json"
 
   config: 
     name: Generate Config 
