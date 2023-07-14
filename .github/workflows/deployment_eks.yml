@@ -163,6 +163,9 @@ jobs:
     outputs:
       ts: ${{ steps.slack.outputs.ts }}
     steps:
+    - name: check current dir
+      run: ls -d $PWD/*
+      
     - name: Send notifications to Slack
       id: slack
       uses: slackapi/slack-github-action@v1.24.0
