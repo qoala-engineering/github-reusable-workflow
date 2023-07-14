@@ -160,6 +160,8 @@ jobs:
   notification:
     runs-on: [ self-hosted, eks-runner ]
     name: Notify to Slack
+    outputs:
+      ts: ${{ steps.slack.outputs.ts }}
     steps:
     - name: Send notifications to Slack
       id: slack
