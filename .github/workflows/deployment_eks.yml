@@ -404,8 +404,11 @@ jobs:
         id: helm
         shell: bash
         run: |
-          echo ${{ steps.values.outputs.host }}
           helm upgrade --install --atomic --wait --namespace ${{ needs.config.outputs.namespace }} --create-namespace ${{ inputs.service_name }} .charts/charts/service -f ${{ steps.values.outputs.values }}
+          if grep -A3 'stagingFactory:' ${{ steps.values.outputs.values }} | tail -n1 | cut -c 12- | grep -q "true"; then
+            kubectl annotate namespace ${{ needs.config.outputs.namespace }} staging-factory=true
+          fi
+
       - name: Update status
         if: ${{ steps.helm.conclusion }} == 'success'
         id: slack
