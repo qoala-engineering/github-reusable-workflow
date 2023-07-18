@@ -368,21 +368,6 @@ jobs:
           token: ${{ secrets.token_github }}
           ref: ${{ inputs.branch_name }}
 
-      - name: Checkout GitHub Action Repo
-        uses: actions/checkout@v2
-        with:
-          repository: qoala-engineering/setup-eks-helm-action
-          token: ${{ secrets.token_github }}
-          path: .github/actions/setup-eks-helm-action
-          ref: staging-factory-feature
-
-      - uses: ./.github/actions/setup-eks-helm-action
-        with:
-          aws-region: ${{ needs.config.outputs.aws_region }}
-          role-to-assume: ${{ needs.config.outputs.deploy_role_arn }}
-          github-token: ${{ secrets.token_github }}
-          cluster-name: ${{ needs.config.outputs.eks_cluster }}
-      
       - name: Checkout SSM Injection
         uses: actions/checkout@v2
         with:
@@ -401,6 +386,21 @@ jobs:
           serviceName: ${{ inputs.service_name }}
           bu: ${{ inputs.bu }}
           assumeRole: ${{ (inputs.repo_name != '' && 'arn:aws:iam::631836213257:role/qoalaplus-devops-ci-role') || ''}}
+
+      - name: Checkout GitHub Action Repo
+        uses: actions/checkout@v2
+        with:
+          repository: qoala-engineering/setup-eks-helm-action
+          token: ${{ secrets.token_github }}
+          path: .github/actions/setup-eks-helm-action
+          ref: staging-factory-feature
+
+      - uses: ./.github/actions/setup-eks-helm-action
+        with:
+          aws-region: ${{ needs.config.outputs.aws_region }}
+          role-to-assume: ${{ needs.config.outputs.deploy_role_arn }}
+          github-token: ${{ secrets.token_github }}
+          cluster-name: ${{ needs.config.outputs.eks_cluster }}
  
       - name: Deploy service
         id: helm
