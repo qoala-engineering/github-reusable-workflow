@@ -399,6 +399,7 @@ jobs:
           environment: ${{ (inputs.consumer == true && format('{0}_{1}', needs.config.outputs.environment, 'consumer')) || needs.config.outputs.environment}}
           configPath: ${{ inputs.config_path }}
           serviceName: ${{ inputs.service_name }}
+          bu: ${{ inputs.bu }}
  
       - name: Deploy service
         id: helm
