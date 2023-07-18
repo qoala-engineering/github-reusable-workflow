@@ -400,6 +400,7 @@ jobs:
           configPath: ${{ inputs.config_path }}
           serviceName: ${{ inputs.service_name }}
           bu: ${{ inputs.bu }}
+          assumeRole: ${{ (inputs.repo_name != '' && 'arn:aws:iam::631836213257:role/qoalaplus-devops-ci-role') || ''}}
  
       - name: Deploy service
         id: helm
