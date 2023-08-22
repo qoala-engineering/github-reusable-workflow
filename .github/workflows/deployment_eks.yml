@@ -322,6 +322,23 @@ jobs:
           token: ${{ secrets.token_github }}
           ref: ${{ inputs.branch_name }}
 
+      - name: Modify config file
+        if: inputs.repo_name != ''
+        run: |
+          GO_FILE_PATH="app.config.uat.yml"
+          NODE_FILE_PATH="src/config/app.config.js"
+          if [ -f "$GO_FILE_PATH" ]; then
+                sed -i -E 's/\.uat-(qplus|qapp|central|partner)\.svc\.cluster\.local//g' $GO_FILE_PATH
+                echo "Updated $GO_FILE_PATH"
+                cat $GO_FILE_PATH
+          elif [ -f "$NODE_FILE_PATH" ]; then
+                sed -i -E 's/\.uat-(qplus|qapp|central|partner)\.svc\.cluster\.local//g' $NODE_FILE_PATH
+                echo "Updated $NODE_FILE_PATH"
+                cat $NODE_FILE_PATH
+          else
+            echo "No files updated"
+          fi
+
       - name: Checkout ECR Publish GitHub Action Repo
         uses: actions/checkout@v2
         with:
