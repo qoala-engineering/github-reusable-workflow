@@ -426,7 +426,7 @@ jobs:
           cat ${{ steps.values.outputs.values }}
           helm upgrade --install --atomic --wait --namespace ${{ needs.config.outputs.namespace }} --create-namespace ${{ inputs.service_name }} .charts/charts/service -f ${{ steps.values.outputs.values }}
           if grep -A3 'stagingFactory:' ${{ steps.values.outputs.values }} | tail -n1 | cut -c 12- | grep -q "true"; then
-            kubectl annotate namespace ${{ needs.config.outputs.namespace }} staging-factory=true
+            kubectl annotate --overwrite namespace ${{ needs.config.outputs.namespace }} staging-factory=true
           fi
 
       - name: Update status
