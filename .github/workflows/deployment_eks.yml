@@ -146,6 +146,11 @@ on:
         required: false
         default: ''
         type: string
+      static_s3_website:
+        description: 'If true will use static website build job'
+        required: false
+        default: false
+        type: boolean
       
     secrets:
       token_github:
@@ -215,10 +220,99 @@ jobs:
               ]
           }
 
+
+  provision-static-website:
+    name: Provision Static Website Resources
+    runs-on: [self-hosted, eks-runner]
+    if: inputs.static_s3_website == true
+    outputs:
+      bucketName: ${{ steps.provision.outputs.bucketName }}
+      cloudfrontID: ${{ steps.provision.outputs.distId }}
+    steps:
+      - name: Checkout
+        if: inputs.repo_name == ''
+        uses: actions/checkout@v2
+        with:
+          repository: qoala-engineering/disposable-static-website-action
+          token: ${{ secrets.token_github }}
+          ref: main
+          path: .github/actions/disposable-static-website-action
+
+      - name: Provision Resources
+        uses: ./.github/actions/disposable-static-website-action
+        id: provision
+        with:
+          bu: ${{ inputs.bu }}
+          env: ${{ inputs.environment }}
+          role: "arn:aws:iam::744994327583:role/staging-factory-role"
+
+  build-frontend:
+    name: Build Frontend
+    runs-on: [self-hosted, eks-runner]
+    needs: provision-static-website
+    if: inputs.static_s3_website == true
+    steps:
+      - name: Checkout
+        if: inputs.repo_name == ''
+        uses: actions/checkout@v2
+
+      - name: Disposable Env Checkout 
+        if: inputs.repo_name != ''
+        uses: actions/checkout@v2
+        with:
+          repository: qoala-engineering/${{ inputs.repo_name }}
+          token: ${{ secrets.token_github }}
+          ref: ${{ inputs.branch_name }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ap-southeast-1
+          role-to-assume: arn:aws:iam::744994327583:role/eks-qoala-dev-cluster-ci-role
+          role-duration-seconds: 3600
+      - name: Set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+          cache: 'npm'
+      - name: Checkout S3 Action V2 Repo
+        uses: actions/checkout@v2
+        with:
+          repository: qoala-engineering/s3-deploy-action
+          ref: 'v2'
+          token: ${{ secrets.GIT_HUB_TOKEN }} # stored in GitHub secrets
+          path: .github/actions/s3-deploy-action-v2
+      - name: Install dependencies
+        run: npm ci
+        env:
+          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
+      - name: Project build
+        run: npm run build:dev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
+      - name: Deploy to S3
+        uses: ./.github/actions/s3-deploy-action-v2
+        with:
+          region: ap-southeast-1
+          source: ./dist
+          bucket: ${{ needs.provision-static-website.outputs.bucketName }}
+          cloudfront-dist-id: ${{ needs.provision-static-website.outputs.cloudfrontID }}
+          modifiers: |
+            [
+              {
+                "pattern": "*.+(js|css|png|svg|eot|ttf|woff|woff2)",
+                "cache_control": "public, max-age=31536000, must-revalidate"
+              }
+            ]
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
+          NODE_OPTIONS: '--max_old_space_size=8192'
+
   config: 
     name: Generate Config 
     needs: [ notification ]
     runs-on: [ self-hosted, eks-runner ]
+    if: inputs.static_s3_website == false
     outputs:
       environment: ${{ steps.config.outputs.environment }}
       eks_cluster: ${{ steps.config.outputs.eks_cluster }}
@@ -252,6 +346,7 @@ jobs:
     name: DB Migration
     needs: config
     runs-on: [ self-hosted, eks-runner ]
+    if: inputs.static_s3_website == false
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -306,6 +401,7 @@ jobs:
     name: Build Image
     needs: [ config, db_migration ]
     runs-on: [ self-hosted, eks-runner ]
+    if: inputs.static_s3_website == false
     outputs:
       image_registry: ${{ steps.publish_image.outputs.image_registry }}
       image_tag: ${{ (inputs.consumer == true && format('{0}-{1}', 'consumer', github.sha)) || github.sha}}
@@ -372,6 +468,7 @@ jobs:
     name: Deploy Service
     needs: [ config, build, notification ]
     runs-on: [self-hosted, eks-runner]
+    if: inputs.static_s3_website == false
     steps:
       - name: Checkout
         if: inputs.repo_name == ''
