@@ -230,7 +230,6 @@ jobs:
       cloudfrontID: ${{ steps.provision.outputs.distId }}
     steps:
       - name: Checkout
-        if: inputs.repo_name == ''
         uses: actions/checkout@v2
         with:
           repository: qoala-engineering/disposable-static-website-action
