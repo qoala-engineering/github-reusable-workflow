@@ -254,6 +254,7 @@ jobs:
     if: inputs.static_s3_website == true
     env:
       FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.token_github }}
     steps:
       - name: Checkout
         if: inputs.repo_name == ''
