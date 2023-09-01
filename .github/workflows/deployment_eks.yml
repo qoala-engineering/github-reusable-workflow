@@ -159,6 +159,8 @@ on:
         required: false
       DEVOPS_SLACK_BOT_TOKEN:
         required: false
+      FONTAWESOME_NPM_AUTH_TOKEN:
+        required: false
 
 name: Deployment Pipeline
 jobs:
@@ -250,6 +252,8 @@ jobs:
     runs-on: [self-hosted, eks-runner]
     needs: provision-static-website
     if: inputs.static_s3_website == true
+    env:
+      FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
     steps:
       - name: Checkout
         if: inputs.repo_name == ''
