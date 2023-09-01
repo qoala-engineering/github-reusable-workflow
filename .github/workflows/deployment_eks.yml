@@ -274,6 +274,8 @@ jobs:
         with:
           node-version: '14'
           cache: 'npm'
+        env:
+          GITHUB_TOKEN: ${{ secrets.token_github }}
       - name: Checkout S3 Action V2 Repo
         uses: actions/checkout@v2
         with:
