@@ -288,12 +288,14 @@ jobs:
           ref: 'v2'
           token: ${{ secrets.token_github }} # stored in GitHub secrets
           path: .github/actions/s3-deploy-action-v2
+
       - name: Install Yarn
         run: npm install -g yarn
-      - name: Project install and build
-        run: |
-          yarn install
-          export NODE_OPTIONS="--max-old-space-size=4096" && yarn run build
+      - name: Install dependencies
+        run: npm ci
+      - name: Project build
+        run: npm run build:staging
+        
       - name: Deploy to S3
         uses: ./.github/actions/s3-deploy-action-v2
         with:
