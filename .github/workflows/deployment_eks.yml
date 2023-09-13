@@ -246,7 +246,7 @@ jobs:
           bu: ${{ inputs.bu }}
           env: ${{ inputs.environment }}
           assumeRole: "arn:aws:iam::744994327583:role/staging-factory-role"
-          service_name: ${{ inputs.service_name }}
+          service_name: ${{ inputs.repo_name }}
 
   build-frontend:
     name: Build Frontend
