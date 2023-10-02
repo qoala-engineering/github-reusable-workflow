@@ -292,7 +292,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '15'
           cache: 'npm'
         env:
           GITHUB_TOKEN: ${{ secrets.token_github }}
