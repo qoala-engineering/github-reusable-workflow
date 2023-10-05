@@ -438,8 +438,8 @@ jobs:
         with:
           repository: qoala-engineering/${{ inputs.repo_name }}
           token: ${{ secrets.token_github }}
-          fetch-depth: 0
           ref: ${{ inputs.branch_name }}
+      - run: git pull origin ${{ inputs.branch_name }}
 
       - name: Modify config file
         if: inputs.repo_name != ''
