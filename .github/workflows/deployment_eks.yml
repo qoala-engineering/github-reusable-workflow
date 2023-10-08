@@ -73,6 +73,10 @@ on:
         description: "overide service_name as ecr_name"
         required: false
         type: string
+      ecr_region:
+        description: "ECR AWS Region"
+        required: false
+        type: string
       with_ca_crt:
         description: "provide option to insert ca.crt file from github secrets"
         required: false
@@ -230,6 +234,32 @@ jobs:
           with_seeder: ${{ inputs.with_seeder }}
           node_version: ${{ inputs.node_version }}
 
+      - name: Configure AWS credentials from Production account
+        if: inputs.with_db_migration == true && inputs.lang == 'python'
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ needs.config.outputs.ssm_role_arn}}
+          aws-region: ap-southeast-1
+          role-duration-seconds: 3600
+      
+      - name: Get env from AWS SSM
+        if: inputs.with_db_migration == true && inputs.lang == 'python'
+        uses: dkershner6/aws-ssm-getparameters-action@v1
+        with:
+          parameterPairs: "${{ needs.config.outputs.ssm_path }}/${{ inputs.db_name_key }} = DB_NAME,
+              ${{ needs.config.outputs.ssm_path }}/${{ inputs.db_host_key }} = DB_HOST,
+              ${{ needs.config.outputs.ssm_path }}/${{ inputs.db_user_key }} = DB_USER,
+              ${{ needs.config.outputs.ssm_path }}/${{ inputs.db_password_key }} = DB_PASSWORD"
+          withDecryption: "true"
+
+      - name: DB Migration Status
+        if: inputs.with_db_migration == true && inputs.lang == 'python'
+        id: status_db_migration
+        shell: bash
+        run: |
+          dbmate -u "mysql://$DB_USER:$DB_PASSWORD@$DB_HOST:3306/$DB_NAME" -d "./database/migrations" --no-dump-schema up
+
+
   build:
     name: Build Image
     needs: [ config, db_migration ]
@@ -258,7 +288,7 @@ jobs:
         uses: ./.github/actions/ecr-publish-action
         id: publish_image
         with:
-          aws-region: ${{ needs.config.outputs.aws_region }}
+          aws-region: ${{ inputs.ecr_region || needs.config.outputs.aws_region }}
           ecr_name: ${{ inputs.ecr_name || inputs.service_name}}
           role-to-assume: ${{ needs.config.outputs.build_role_arn }}
           dockerfile: ${{ (inputs.dockerfile != '' && inputs.dockerfile) || 'Dockerfile' }}
