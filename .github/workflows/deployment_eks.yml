@@ -313,6 +313,7 @@ jobs:
         run: npm run build:staging
 
       - name: Deploy to S3
+        id: website-deployment
         uses: ./.github/actions/s3-deploy-action-v2
         with:
           region: ap-southeast-1
@@ -329,6 +330,69 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.token_github }}
           NODE_OPTIONS: '--max_old_space_size=8192'
+
+      - name: Update status frontend
+        if: ${{ steps.website-deployment.conclusion }} == 'success'
+        id: slack
+        uses: slackapi/slack-github-action@v1.24.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.DEVOPS_SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'C05HQDA9L8G' # ID of Slack Channel you want to post to
+          update-ts: ${{ needs.notification.outputs.ts }}
+          payload: |
+            {
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "*Staging Factory: New Environment for ${{ inputs.repo_name }}*"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Application:* ${{ inputs.repo_name }}"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Environment:* ${{ inputs.environment }}"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "divider"
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "Deployment Status: Success :white_check_mark:"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Host URL:* https://${{ needs.provision-static-website.outputs.bucketName }}"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Github Workflow:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow>"
+                      }
+                    ]
+                  }
+                ]
+            }
 
   config: 
     name: Generate Config 
