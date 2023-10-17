@@ -275,7 +275,7 @@ jobs:
           CONFIG_FILE="config/development.json"
           if [ -f "$CONFIG_FILE" ]; then
                 DEV_HOST="https://api-${{ inputs.environment }}.lab.qoalaplus.com"
-                if [ -n "$apiBaseUrlQPlus" ]
+                if [ jq --arg key "apiBaseUrlQPlus" ]
                 then
                   jq --arg key "apiBaseUrlQPlus" --arg value "$DEV_HOST" \
                 else
