@@ -276,7 +276,17 @@ jobs:
           CONFIG_FILE="config/development.json"
           if [ -f "$CONFIG_FILE" ]; then
                 DEV_HOST="https://api-${{ inputs.environment }}.lab.qoalaplus.com"
-                jq --arg key "apiBaseUrl" --arg value "$DEV_HOST" \
+                if [ `jq 'has("apiBaseUrlQPlus")' config/development.json` == true ]; then
+                  jq --arg key "apiBaseUrlQPlus" --arg value "$DEV_HOST" \
+                  '.[$key]=$value' "config/development.json" > temp.json && mv temp.json config/development.json
+                  echo "Updated $CONFIG_FILE"
+                  cat $CONFIG_FILE
+                else
+                  jq --arg key "apiBaseUrl" --arg value "$DEV_HOST" \
+                  '.[$key]=$value' "config/development.json" > temp.json && mv temp.json config/development.json
+                  echo "Updated $CONFIG_FILE"
+                  cat $CONFIG_FILE
+                fi
                 '.[$key]=$value' "config/development.json" > temp.json && mv temp.json config/development.json
                 echo "Updated $CONFIG_FILE"
                 cat $CONFIG_FILE
