@@ -151,6 +151,11 @@ on:
         required: false
         default: false
         type: boolean
+      use_yarn:
+        description: 'If true will use yarn to build'
+        required: false
+        default: false
+        type: boolean
       
     secrets:
       token_github:
@@ -307,6 +312,19 @@ jobs:
           cache: 'npm'
         env:
           GITHUB_TOKEN: ${{ secrets.token_github }}
+
+      - name: Setup yarn
+        if: inputs.use_yarn == true
+        run: npm install -g yarn
+      - name: Set node version for yarn
+        if: inputs.use_yarn == true
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+          cache: 'yarn'
+        env:
+          GITHUB_TOKEN: ${{ secrets.token_github }}
+
       - name: Checkout S3 Action V2 Repo
         uses: actions/checkout@v2
         with:
@@ -316,11 +334,21 @@ jobs:
           path: .github/actions/s3-deploy-action-v2
 
       - name: Install dependencies
+        if: inputs.use_yarn == false
         run: |
           npm install
           npm ci
       - name: Project build
+        if: inputs.use_yarn == false
         run: npm run build:staging
+
+      - name: Yarn install and build
+        if: inputs.use_yarn == true
+        run: |
+          yarn install
+          yarn run build:staging
+        env:
+          GITHUB_TOKEN: ${{ secrets.token_github }}
 
       - name: Deploy to S3
         id: website-deployment
