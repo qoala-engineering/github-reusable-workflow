@@ -230,7 +230,7 @@ jobs:
 
   provision-static-website:
     name: Provision Static Website Resources
-    runs-on: [self-hosted, eks-runner]
+    runs-on: [self-hosted, eks-runner-fe]
     if: inputs.static_s3_website == true
     outputs:
       bucketName: ${{ steps.provision.outputs.bucketName }}
