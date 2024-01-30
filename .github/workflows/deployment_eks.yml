@@ -255,7 +255,7 @@ jobs:
 
   build-frontend:
     name: Build Frontend
-    runs-on: [self-hosted, eks-runner-fe]
+    runs-on: [self-hosted, eks-runner]
     needs: provision-static-website
     if: inputs.static_s3_website == true
     env:
