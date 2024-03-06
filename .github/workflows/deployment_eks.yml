@@ -156,6 +156,10 @@ on:
         required: false
         default: false
         type: boolean
+      lifetime:
+        description: "Extend environment lifetime value set in hours. The value you set will be added to the initial 4h(ex. value set to 5h, 5+4=9h)"
+        type: string
+        required: false
       
     secrets:
       token_github:
@@ -647,6 +651,9 @@ jobs:
           helm upgrade --install --atomic --wait --namespace ${{ needs.config.outputs.namespace }} --create-namespace ${{ inputs.service_name }} .charts/charts/service -f ${{ steps.values.outputs.values }}
           if grep -A3 'stagingFactory:' ${{ steps.values.outputs.values }} | tail -n1 | cut -c 12- | grep -q "true"; then
             kubectl annotate --overwrite namespace ${{ needs.config.outputs.namespace }} staging-factory=true
+            if ${{ inputs.lifetime }} != ''; then
+              kubectl annotate --overwrite namespace ${{ needs.config.outputs.namespace }} staging-facroty/extend=${{ inputs.lifetime }}
+            fi
           fi
 
       - name: Update status
