@@ -627,7 +627,7 @@ jobs:
           configPath: ${{ inputs.config_path }}
           serviceName: ${{ inputs.service_name }}
           bu: ${{ inputs.bu }}
-          assumeRole: ${{ (inputs.repo_name != '' && 'arn:aws:iam::631836213257:role/qoalaplus-devops-ci-role') || ''}}
+          assumeRole: ${{ (inputs.bu == 'qplus' && 'arn:aws:iam::631836213257:role/qoalaplus-devops-ci-role') || 'arn:aws:iam::733346176650:role/devops-ci-role'}}
 
       - name: Checkout GitHub Action Repo
         uses: actions/checkout@v2
