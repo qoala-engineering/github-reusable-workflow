@@ -648,18 +648,16 @@ jobs:
         id: helm
         shell: bash
         run: |
-          env=$(echo ${{ needs.config.outputs.namespace }} | sed 's/-[^-]*$//')
-          helm upgrade --install --atomic --wait --namespace $env --create-namespace ${{ inputs.service_name }} .charts/charts/service -f ${{ steps.values.outputs.values }}
+          helm upgrade --install --atomic --wait --namespace ${{ needs.config.outputs.namespace }} --create-namespace ${{ inputs.service_name }} .charts/charts/service -f ${{ steps.values.outputs.values }}
           if grep -A3 'stagingFactory:' ${{ steps.values.outputs.values }} | tail -n1 | cut -c 12- | grep -q "true"; then
-            kubectl annotate --overwrite namespace $env staging-factory=true
+            kubectl annotate --overwrite namespace ${{ needs.config.outputs.namespace }} staging-factory=true
           fi
 
       - name: Extend env lifetime
         shell: bash
         if: ${{ inputs.lifetime }} != ''
         run: |
-          env=$(echo ${{ needs.config.outputs.namespace }} | sed 's/-[^-]*$//')
-          kubectl annotate --overwrite namespace $env staging-facroty/extend=${{ inputs.lifetime }}
+          kubectl annotate --overwrite namespace ${{ needs.config.outputs.namespace }} staging-facroty/extend=${{ inputs.lifetime }}
 
       - name: Update status
         if: ${{ steps.helm.conclusion }} == 'success'
